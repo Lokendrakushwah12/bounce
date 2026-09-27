@@ -6,20 +6,23 @@
 <style>
   /* ponytail: single visual world (1-bit LCD on a saffron ground), no theme switch */
   :root{
-    --feed:#fff0de; --feed-ink:#161616;
+    --feed:#fff8f0; --feed-ink:#161616;
     --card:#f4f4f1; --ink:#161616; --ink-2:#6e6e6a; --rule:#d3d3ce; --press:#e3e3de;
     --lcd:#e3e7e5; --px:#15191b;
     --pix:"Pixelify Sans","Silkscreen",monospace; --lab:"Silkscreen","Courier New",monospace;
   }
   html,body{margin:0;background:var(--feed);color:var(--feed-ink);font-family:var(--lab)}
   .post{max-width:560px;min-height:100vh;box-sizing:border-box;margin:0 auto;padding:24px 16px;display:grid;align-content:center}
-  .phone{background:var(--card);color:var(--ink);border-radius:22px;padding:14px 14px 16px;box-shadow:0 1px 0 rgba(22,22,22,.12),0 18px 40px -18px rgba(150,70,0,.28);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .phone{background:var(--card);color:var(--ink);border-radius:22px;padding:14px 14px 16px;box-shadow:0 1px 0 rgba(22,22,22,.12),0 18px 40px -18px rgba(150,70,0,.22);user-select:none;-webkit-user-select:none;touch-action:manipulation}
   .top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--lab);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
   .logo{font-size:13px;font-weight:700;letter-spacing:.24em}
-  .logo i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:4px;vertical-align:-1px;background:radial-gradient(circle at 34% 32%,var(--card) 0 18%,var(--ink) 19%)}
+  [data-icon]{display:inline-flex;line-height:0}
+  [data-icon] svg{display:block}
+  .logo i{margin-left:6px;vertical-align:-1px}
+  .tag{display:inline-flex;gap:6px;align-items:center}
   .dim{color:var(--ink-2)}
   .right{display:flex;gap:12px;align-items:center}
-  .snd{font:inherit;letter-spacing:inherit;color:var(--ink);background:none;border:1px solid var(--rule);border-radius:6px;padding:3px 7px;cursor:pointer}
+  .snd{color:var(--ink);background:none;border:1px solid var(--rule);border-radius:6px;padding:4px 6px;cursor:pointer;line-height:0}
   .snd:hover{border-color:var(--ink)}
   .lcd{position:relative;margin:10px 0 14px;border:1px solid var(--rule);border-radius:10px;overflow:hidden;background:var(--lcd)}
   canvas{display:block;width:100%;aspect-ratio:192/120;image-rendering:pixelated;image-rendering:crisp-edges}
@@ -33,11 +36,11 @@
   .menu h1{grid-row:2;margin:0;font-size:clamp(28px,8vw,40px);font-weight:700;letter-spacing:.01em}
   .pick{grid-row:3;display:flex;align-items:center;gap:22px}
   .pick button,.soft button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:4px 6px}
-  .pick button{font-size:18px}
-  .icon{width:40px;height:40px;border-radius:50%;background:var(--px);display:grid;place-items:center}
-  .icon::before{content:"";width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 34% 30%,var(--lcd) 0 16%,var(--px) 17%);box-shadow:0 0 0 2px var(--lcd)}
+  .pick button{line-height:0;padding:8px}
+  .icon{color:var(--px)}
   .lvl{grid-row:4;font-size:14px}
   .soft{grid-row:6;width:100%;display:flex;justify-content:space-between;font-size:clamp(18px,5vw,24px);font-weight:700}
+  .soft button{display:inline-flex;align-items:center;gap:8px}
   .soft button:disabled{opacity:.3;cursor:default}
   .ctrls{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}
   .pad{position:relative;width:150px;height:150px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;touch-action:none;cursor:grab}
@@ -48,7 +51,7 @@
   .pad.drag .knob{transition:none;background-color:var(--press)}
   @media (prefers-reduced-motion:reduce){.knob{transition:none}}
   .btns{display:flex;gap:10px;justify-content:flex-end;align-items:stretch;height:132px}
-  .btns button{width:92px;border-radius:14px;border:1.5px solid var(--ink);background:none;font-family:var(--lab);font-size:11px;letter-spacing:.08em;color:var(--ink);cursor:pointer;display:grid;place-content:center;gap:4px}
+  .btns button{width:92px;border-radius:14px;border:1.5px solid var(--ink);background:none;font-family:var(--lab);font-size:11px;letter-spacing:.08em;color:var(--ink);cursor:pointer;display:grid;place-content:center;justify-items:center;gap:5px}
   .btns .back{align-self:flex-end;height:76px}
   .btns .jump{font-size:13px;font-weight:700}
   .btns small{font-size:7px;color:var(--ink-2)}
@@ -59,27 +62,27 @@
 
 <div class="post">
   <div class="phone">
-    <div class="top"><div class="logo">BOUNCE<i></i></div><div class="right"><button class="snd" id="snd" aria-pressed="true">SOUND ON</button><span class="dim" id="lvlName">LEVEL 1</span></div></div>
+    <div class="top"><div class="logo">BOUNCE<i data-icon="ball" data-s="2"></i></div><div class="right"><button class="snd" id="snd" aria-pressed="true" aria-label="Sound on" title="Sound on"></button><span class="dim tag"><i data-icon="flag" data-s="2"></i><span id="lvlName">LEVEL 1</span></span></div></div>
     <div class="lcd">
       <canvas id="c" width="192" height="120" aria-label="Bounce game screen"></canvas>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
       <div class="menu" id="menu">
         <h1>Bounce</h1>
-        <div class="pick"><button id="prev" aria-label="Previous level">◀</button><span class="icon" aria-hidden="true"></span><button id="next" aria-label="Next level">▶</button></div>
+        <div class="pick"><button id="prev" aria-label="Previous level"><i data-icon="triL" data-s="3"></i></button><span class="icon" data-icon="ball" data-s="5"></span><button id="next" aria-label="Next level"><i data-icon="triR" data-s="3"></i></button></div>
         <div class="lvl" id="pickName">Level 1</div>
-        <div class="soft"><button id="select">Select</button><button id="resume" disabled>Back</button></div>
+        <div class="soft"><button id="select"><i data-icon="triR" data-s="2"></i>Select</button><button id="resume" disabled><i data-icon="triL" data-s="2"></i>Back</button></div>
       </div>
     </div>
     <div class="ctrls">
       <div class="pad" id="pad" role="application" aria-label="Joystick: drag sideways to roll, push up to jump">
-        <span class="u" aria-hidden="true">↑</span>
-        <span class="l" aria-hidden="true">←</span>
+        <span class="u" aria-hidden="true"><i data-icon="up" data-s="3"></i></span>
+        <span class="l" aria-hidden="true"><i data-icon="left" data-s="3"></i></span>
         <div class="knob" id="knob"></div>
-        <span class="r" aria-hidden="true">→</span>
+        <span class="r" aria-hidden="true"><i data-icon="right" data-s="3"></i></span>
       </div>
       <div class="btns">
-        <button class="back" id="menuBtn">BACK<small>MENU · ESC</small></button>
-        <button class="jump" data-k="up">JUMP<small>TAP · SPACE</small></button>
+        <button class="back" id="menuBtn"><i data-icon="menu" data-s="3"></i>BACK<small>MENU · ESC</small></button>
+        <button class="jump" data-k="up"><i data-icon="jump" data-s="3"></i>JUMP<small>TAP · SPACE</small></button>
       </div>
     </div>
   </div>
@@ -270,6 +273,25 @@ const HS={};for(const f of [0,1])for(const s of [0,1])for(const d of [0,1])for(c
 const DIG=['111101101101111','010110010010111','111001111100111','111001111001111','101101111001001','111100111001111','111100111101111','111001001001001','111101111101111','111101111001111'];
 function num(n,len,x,y){String(n).padStart(len,'0').split('').forEach((d,i)=>{const b=DIG[d];for(let k=0;k<15;k++)if(b[k]==='1')g.fillRect(x+i*4+k%3,y+(k/3|0),1,1)})}
 
+// UI icons: 1-bit pixel art, drawn as crisp SVG in the current text colour
+const ICONS={
+  ball:['..####..','.######.','##..####','##..####','########','########','.######.','..####..'],
+  up:['...#...','..###..','.#####.','#######','..###..','..###..','..###..'],
+  triR:['#...','##..','###.','####','###.','##..','#...'],
+  jump:['....#....','...###...','..#####..','.........','...###...','..#####..','..#####..','...###...'],
+  menu:['########','########','........','########','########','........','########','########'],
+  flag:['##.....','#####..','#######','#####..','##.....','#......','#......','#......'],
+  sndOn:['....#......','...##...#..','#####.#..#.','#####..#.#.','#####..#.#.','#####.#..#.','...##...#..','....#......'],
+  sndOff:['....#......','...##......','#####.#...#','#####..#.#.','#####...#..','#####..#.#.','...##.#...#','....#......'],
+};
+ICONS.triL=ICONS.triR.map(r=>[...r].reverse().join(''));
+ICONS.left=ICONS.up[0].split('').map((_,x)=>ICONS.up.map(r=>r[x]).join(''));        // rotate up -> left
+ICONS.right=ICONS.left.map(r=>[...r].reverse().join(''));
+function pxIcon(name,s){const R=ICONS[name],h=R.length,w=R[0].length;let d='';
+  R.forEach((r,y)=>{for(let x=0;x<w;x++)if(r[x]==='#')d+=`M${x} ${y}h1v1h-1z`});
+  return `<svg viewBox="0 0 ${w} ${h}" width="${w*s}" height="${h*s}" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><path d="${d}"/></svg>`}
+document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=pxIcon(el.dataset.icon,+el.dataset.s||2));
+
 // sound: short square-wave beeps like the phone speaker
 let ac=null,muted=false;try{muted=localStorage.getItem('bounce-muted')==='1'}catch(e){}
 function audio(){if(!ac)try{ac=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}if(ac&&ac.state==='suspended')ac.resume()}
@@ -279,7 +301,7 @@ function beep(freqs,dur=.07,type='square',to){if(muted||!ac)return;let t=ac.curr
 const SFX={hoop:()=>beep([988,1319]),cp:()=>beep([659,988],.05),life:()=>beep([784,988,1175,1568],.05),pop:()=>beep([520],.28,'sawtooth',50),
   big:()=>beep([180],.22,'square',720),small:()=>beep([720],.22,'square',180),clear:()=>beep([523,659,784,1047],.1),over:()=>beep([392,330,262],.2),
   open:()=>beep([1047,1319,1568],.06),power:()=>beep([440,880,660,1320],.05),end:()=>beep([660,440],.06)};
-function showSnd(){$('snd').textContent=muted?'SOUND OFF':'SOUND ON';$('snd').setAttribute('aria-pressed',String(!muted))}
+function showSnd(){const el=$('snd'),l=muted?'Sound off':'Sound on';el.innerHTML=pxIcon(muted?'sndOff':'sndOn',2);el.setAttribute('aria-pressed',String(!muted));el.setAttribute('aria-label',l);el.title=l}
 
 let mode='menu',pick=0,lvl=0,grid,rows,cols,hoops,spiders,cp,b,lives=3,score=0,camX=0,camY=0,keys={},jumpBuf=0,clear=0,frame=0,playing=false,events=[];
 
