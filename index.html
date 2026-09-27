@@ -4,16 +4,16 @@
 <title>Monochrome Bounce</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=Silkscreen:wght@400;700&display=swap">
 <style>
-  /* ponytail: single visual world (1-bit LCD on a saffron ground), no theme switch */
+  /* ponytail: single visual world (1-bit LCD on a neutral grey ground), no theme switch */
   :root{
-    --feed:#fff8f0; --feed-ink:#161616;
+    --feed:#e2e2df; --feed-ink:#161616;
     --card:#f4f4f1; --ink:#161616; --ink-2:#6e6e6a; --rule:#d3d3ce; --press:#e3e3de;
     --lcd:#e3e7e5; --px:#15191b;
     --pix:"Pixelify Sans","Silkscreen",monospace; --lab:"Silkscreen","Courier New",monospace;
   }
   html,body{margin:0;background:var(--feed);color:var(--feed-ink);font-family:var(--lab)}
   .post{max-width:560px;min-height:100vh;box-sizing:border-box;margin:0 auto;padding:24px 16px;display:grid;align-content:center}
-  .phone{background:var(--card);color:var(--ink);border-radius:22px;padding:14px 14px 16px;box-shadow:0 1px 0 rgba(22,22,22,.12),0 18px 40px -18px rgba(150,70,0,.22);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .phone{background:var(--card);color:var(--ink);border-radius:22px;padding:14px 14px 16px;box-shadow:0 1px 0 rgba(22,22,22,.12),0 18px 40px -18px rgba(0,0,0,.18);user-select:none;-webkit-user-select:none;touch-action:manipulation}
   .top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--lab);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
   .logo{font-size:13px;font-weight:700;letter-spacing:.24em}
   [data-icon]{display:inline-flex;line-height:0}
