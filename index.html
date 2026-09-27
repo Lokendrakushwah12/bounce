@@ -4,16 +4,25 @@
 <title>Monochrome Bounce</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=Silkscreen:wght@400;700&display=swap">
 <style>
-  /* ponytail: single visual world (1-bit LCD on a neutral grey ground), no theme switch */
   :root{
     --feed:#e2e2df; --feed-ink:#161616;
     --card:#f4f4f1; --ink:#161616; --ink-2:#6e6e6a; --rule:#d3d3ce; --press:#e3e3de;
-    --lcd:#e3e7e5; --px:#15191b;
+    --lcd:#e3e7e5; --px:#15191b; --grid:rgba(21,25,27,.07); --edge:rgba(22,22,22,.12); --shadow:rgba(0,0,0,.18);
+    --screen-filter:none;
     --pix:"Pixelify Sans","Silkscreen",monospace; --lab:"Silkscreen","Courier New",monospace;
   }
+  /* dark: same 1-bit screen, inverted like a negative LCD (the canvas is flipped with a filter, so sprites stay one set) */
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --feed:#121312; --feed-ink:#e6e6e1; --card:#1e1f1d; --ink:#e6e6e1; --ink-2:#8f908b; --rule:#363734; --press:#2b2c29;
+    --lcd:#1a1d1c; --px:#e3e7e5; --grid:rgba(227,231,229,.05); --edge:rgba(255,255,255,.06); --shadow:rgba(0,0,0,.6);
+    --screen-filter:invert(1) hue-rotate(180deg)}}
+  :root[data-theme="dark"]{
+    --feed:#121312; --feed-ink:#e6e6e1; --card:#1e1f1d; --ink:#e6e6e1; --ink-2:#8f908b; --rule:#363734; --press:#2b2c29;
+    --lcd:#1a1d1c; --px:#e3e7e5; --grid:rgba(227,231,229,.05); --edge:rgba(255,255,255,.06); --shadow:rgba(0,0,0,.6);
+    --screen-filter:invert(1) hue-rotate(180deg)}
   html,body{margin:0;background:var(--feed);color:var(--feed-ink);font-family:var(--lab)}
   .post{max-width:560px;min-height:100vh;box-sizing:border-box;margin:0 auto;padding:24px 16px;display:grid;align-content:center}
-  .phone{background:var(--card);color:var(--ink);border-radius:22px;padding:14px 14px 16px;box-shadow:0 1px 0 rgba(22,22,22,.12),0 18px 40px -18px rgba(0,0,0,.18);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .phone{background:var(--card);color:var(--ink);border-radius:22px;padding:14px 14px 16px;box-shadow:0 1px 0 var(--edge),0 18px 40px -18px var(--shadow);user-select:none;-webkit-user-select:none;touch-action:manipulation}
   .top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--lab);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
   .logo{font-size:13px;font-weight:700;letter-spacing:.24em}
   [data-icon]{display:inline-flex;line-height:0}
@@ -22,13 +31,13 @@
   .tag{display:inline-flex;gap:6px;align-items:center}
   .dim{color:var(--ink-2)}
   .right{display:flex;gap:12px;align-items:center}
-  .snd{color:var(--ink);background:none;border:1px solid var(--rule);border-radius:6px;padding:4px 6px;cursor:pointer;line-height:0}
-  .snd:hover{border-color:var(--ink)}
+  .snd,.thm{color:var(--ink);background:none;border:1px solid var(--rule);border-radius:6px;padding:4px 6px;cursor:pointer;line-height:0}
+  .snd:hover,.thm:hover{border-color:var(--ink)}
   .lcd{position:relative;margin:10px 0 14px;border:1px solid var(--rule);border-radius:10px;overflow:hidden;background:var(--lcd)}
-  canvas{display:block;width:100%;aspect-ratio:192/120;image-rendering:pixelated;image-rendering:crisp-edges}
+  canvas{display:block;width:100%;aspect-ratio:192/120;image-rendering:pixelated;image-rendering:crisp-edges;filter:var(--screen-filter)}
   .lcd::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
-    background:linear-gradient(90deg,rgba(21,25,27,.07) 1px,transparent 1px) 0 0/calc(100%/192) 100%,
-               linear-gradient(rgba(21,25,27,.07) 1px,transparent 1px) 0 0/100% calc(100%/120)}
+    background:linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/calc(100%/192) 100%,
+               linear-gradient(var(--grid) 1px,transparent 1px) 0 0/100% calc(100%/120)}
   .toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);background:var(--px);color:var(--lcd);font-family:var(--pix);font-weight:700;font-size:18px;padding:4px 12px;opacity:0;transition:opacity .15s;pointer-events:none;white-space:nowrap}
   .toast.on{opacity:1}
   .menu{position:absolute;inset:0;background:var(--lcd);color:var(--px);font-family:var(--pix);display:grid;grid-template-rows:1fr auto auto auto 1fr auto;justify-items:center;gap:6px;padding:10px 14px 8px}
@@ -62,7 +71,7 @@
 
 <div class="post">
   <div class="phone">
-    <div class="top"><div class="logo">BOUNCE<i data-icon="ball" data-s="2"></i></div><div class="right"><button class="snd" id="snd" aria-pressed="true" aria-label="Sound on" title="Sound on"></button><span class="dim tag"><i data-icon="flag" data-s="2"></i><span id="lvlName">LEVEL 1</span></span></div></div>
+    <div class="top"><div class="logo">BOUNCE<i data-icon="ball" data-s="2"></i></div><div class="right"><button class="thm" id="thm" aria-label="Dark mode" title="Dark mode"></button><button class="snd" id="snd" aria-pressed="true" aria-label="Sound on" title="Sound on"></button><span class="dim tag"><i data-icon="flag" data-s="2"></i><span id="lvlName">LEVEL 1</span></span></div></div>
     <div class="lcd">
       <canvas id="c" width="192" height="120" aria-label="Bounce game screen"></canvas>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -281,6 +290,8 @@ const ICONS={
   jump:['....#....','...###...','..#####..','.........','...###...','..#####..','..#####..','...###...'],
   menu:['########','########','........','########','########','........','########','########'],
   flag:['##.....','#####..','#######','#####..','##.....','#......','#......','#......'],
+  moon:['..####..','.###....','###.....','###.....','###.....','####...#','.######.','..####..'],
+  sun:['....#....','.#.....#.','...###...','..#####..','#.#####.#','..#####..','...###...','.#.....#.','....#....'],
   sndOn:['....#......','...##...#..','#####.#..#.','#####..#.#.','#####..#.#.','#####.#..#.','...##...#..','....#......'],
   sndOff:['....#......','...##......','#####.#...#','#####..#.#.','#####...#..','#####..#.#.','...##.#...#','....#......'],
 };
@@ -291,6 +302,14 @@ function pxIcon(name,s){const R=ICONS[name],h=R.length,w=R[0].length;let d='';
   R.forEach((r,y)=>{for(let x=0;x<w;x++)if(r[x]==='#')d+=`M${x} ${y}h1v1h-1z`});
   return `<svg viewBox="0 0 ${w} ${h}" width="${w*s}" height="${h*s}" shape-rendering="crispEdges" fill="currentColor" aria-hidden="true"><path d="${d}"/></svg>`}
 document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=pxIcon(el.dataset.icon,+el.dataset.s||2));
+
+// theme: follows the system until the player picks; the button shows what it switches to
+const root=document.documentElement,sysDark=matchMedia('(prefers-color-scheme: dark)');
+try{const t=localStorage.getItem('bounce-theme');if(t)root.dataset.theme=t}catch(e){}
+const isDark=()=>root.dataset.theme?root.dataset.theme==='dark':sysDark.matches;
+function showThm(){const el=document.getElementById('thm'),d=isDark(),l=d?'Light mode':'Dark mode';el.innerHTML=pxIcon(d?'sun':'moon',2);el.setAttribute('aria-label',l);el.title=l}
+document.getElementById('thm').onclick=()=>{root.dataset.theme=isDark()?'light':'dark';try{localStorage.setItem('bounce-theme',root.dataset.theme)}catch(e){}showThm()};
+sysDark.addEventListener('change',showThm);showThm();
 
 // sound: short square-wave beeps like the phone speaker
 let ac=null,muted=false;try{muted=localStorage.getItem('bounce-muted')==='1'}catch(e){}

@@ -12,7 +12,7 @@ Open `index.html` in a browser to play. No build step, no dependencies.
 | Jump (hold to keep bouncing) | Up, W or Space |
 | Menu / resume | Esc |
 
-On touch screens, drag the joystick sideways to roll and push it up to jump. The sound button in the top bar mutes the beeps.
+On touch screens, drag the joystick sideways to roll and push it up to jump. The top bar has a sound button and a light/dark switch. Dark mode also follows your system setting.
 
 ## How it plays
 
