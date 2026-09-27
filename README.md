@@ -16,14 +16,19 @@ On touch screens, drag the joystick sideways to roll and push it up to jump. The
 
 ## How it plays
 
-- Thread every hoop to open the exit door. Small hoops only fit the small ball.
+- Thread every hoop to open the exit door. Small hoops only fit the small ball. Flat hoops are jumped up through.
 - Crystals are checkpoints. Thorns and spiders pop the ball.
 - The pump makes the ball big, so it floats in deep water. The deflater makes it small again, so it fits through tunnels.
 - Rubber blocks bounce you higher each time you land on them with jump held.
-- Ramps turn a fall into a roll.
+- Ramps turn a fall into a roll. Rubber ramps keep all of your speed.
+- Thorns point up, down or sideways. The big ball floats in deep water but cannot jump off its surface, so pools have a low bank to roll out onto.
 - Power-ups last 12 seconds: gravity flips you onto the ceiling, jump launches you skyward, speed doubles your top speed.
 
-There are eleven levels. Each one introduces a mechanic, and the last one mixes them.
+There are 21 levels: the 11 of the base game plus 10 more, matching the original's two downloadable packs. Each one introduces a mechanic, and the later ones mix them. Levels unlock as you reach them.
+
+## Menu and saving
+
+The menu follows the original: New game, Continue, Levels, High score and Instructions. Your best score, the furthest level you reached and a Continue point are saved in the browser.
 
 ## Editing levels
 

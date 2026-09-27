@@ -47,7 +47,15 @@
   .pick button,.soft button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:4px 6px}
   .pick button{line-height:0;padding:8px}
   .icon{color:var(--px)}
-  .lvl{grid-row:4;font-size:14px}
+  .lvl{grid-row:4;font-size:14px;display:flex;gap:8px;align-items:center}
+  .mbody{grid-row:3/5;text-align:center;font-size:clamp(11px,2.8vw,14px);line-height:1.55;max-width:44ch}
+  .mbody .big{font-size:clamp(26px,7vw,36px);font-weight:700;letter-spacing:.06em;margin-bottom:4px}
+  .mbody p{margin:0}
+  .mbody .big{display:flex;justify-content:center;margin:4px 0 12px}
+  svg.num{display:inline-block;vertical-align:-1px;margin:0 1px}
+  .tag svg.num{vertical-align:0}
+  .mbody i{vertical-align:-1px;margin-right:6px}
+  .pick[hidden],.lvl[hidden]{display:none}
   .soft{grid-row:6;width:100%;display:flex;justify-content:space-between;font-size:clamp(18px,5vw,24px);font-weight:700}
   .soft button{display:inline-flex;align-items:center;gap:8px}
   .soft button:disabled{opacity:.3;cursor:default}
@@ -76,9 +84,10 @@
       <canvas id="c" width="192" height="120" aria-label="Bounce game screen"></canvas>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
       <div class="menu" id="menu">
-        <h1>Bounce</h1>
-        <div class="pick"><button id="prev" aria-label="Previous level"><i data-icon="triL" data-s="3"></i></button><span class="icon" data-icon="ball" data-s="5"></span><button id="next" aria-label="Next level"><i data-icon="triR" data-s="3"></i></button></div>
-        <div class="lvl" id="pickName">Level 1</div>
+        <h1 id="mTitle">Bounce</h1>
+        <div class="pick" id="mPick"><button id="prev" aria-label="Previous"><i data-icon="triL" data-s="3"></i></button><span class="icon" id="mIcon"></span><button id="next" aria-label="Next"><i data-icon="triR" data-s="3"></i></button></div>
+        <div class="lvl" id="mLabel" aria-live="polite">New game</div>
+        <div class="mbody" id="mBody" hidden></div>
         <div class="soft"><button id="select"><i data-icon="triR" data-s="2"></i>Select</button><button id="resume" disabled><i data-icon="triL" data-s="2"></i>Back</button></div>
       </div>
     </div>
@@ -100,6 +109,7 @@
 <script>
 // # brick  R rubber  ◢◣◥◤ slopes  ^ thorns  v ceiling thorns  ~ water
 // o hoop (stands on its tile, 2 tall)  O hoop in water  i small hoop (small ball only)  = flat hoop (2 wide, jump up through)
+// ◸◹◿◺ rubber ramps  < > sideways thorns  - small flat hoop  Q ceiling pump
 // P inflater  p deflater  G gravity  J jump  Z speed  L extra life  C checkpoint  V/H spider  F exit  S start
 const LEVELS=[{name:"Level 1",map:[
 '################################################################',
@@ -125,7 +135,7 @@ const LEVELS=[{name:"Level 1",map:[
 '#####################################################################',
 '#...............................##########...V......................#',
 '#...............................##########........o.......o.........#',
-'#.......##~~~~O~~~~O~~~~~###....##########..........................#',
+'#.......##~~~~O~~~~O~~~~~.......##########..........................#',
 '#.......##~~~~~~~~~~~~~~~###....##########..........................#',
 '#.......##~~~~~~~~~~~~~~~###....p#########...........H..............#',
 '#.S..P..##~~~~~~~~~~~~~~~###...............C........#..........#...F#',
@@ -160,7 +170,7 @@ const LEVELS=[{name:"Level 1",map:[
 '##########################################################################',
 '#............................##########..................................#',
 '#.....i......................##########...i...i.......o.....i......i.....#',
-'#...........##~~~~O~~~~~~##..##########..................................#',
+'#...........##~~~~O~~~~~~....##########..................................#',
 '#...........##~~~~~~~~~~~##..##########..................................#',
 '#...........##~~~~~~~~~~~##..p#########..................................#',
 '#.S.......P.##~~~~~~~~~~~##.............C.........P......p......C......F.#',
@@ -199,7 +209,7 @@ const LEVELS=[{name:"Level 1",map:[
 '#........................................................................................#',
 '#................................o...............o.......................................#',
 '#.S...Z.............................................C............Z.....................F.#',
-'######################^^^^^^^#########^^^^^^^#########^^^^^^^#########^^^^^^##############',
+'######################^^^^^^##########^^^^^^##########^^^^^^##########^^^^^^##############',
 '##########################################################################################']},
 {name:"Level 9",map:[
 '################################################################################',
@@ -227,13 +237,148 @@ const LEVELS=[{name:"Level 1",map:[
 '#.................................###########......................................................#',
 '#...........o....P................###########......................................................#',
 '#...............###...............###########......................................................#',
-'#.....o.........###~~~~~O~~~~~~#..###########..................................o...................#',
+'#.....o.........###~~~~~O~~~~~~...###########..................................o...................#',
 '#...............###~~~~~~~~~~~~#..###########.............o.....o..................................#',
 '#...............###~~~~~~~~~~~~#..###########......................................................#',
 '#...............###~~~~~~~~~~~~#..p##########.............................H.............◢###◣......#',
 '#.S.............###~~~~~~~~~~~~#..............C...G...................C..#..........#..◢#####◣...F.#',
 '##########RRRR#####^^^^^^^^^^^^#####################^^^^^^^^^^^^^^^^^###############################',
-'####################################################################################################']}];
+'####################################################################################################']},
+{name:"Level 12",map:[
+'######################################################################',
+'#.................................V..................................#',
+'#.....o........o......................o.......o.............o........#',
+'#....................................................................#',
+'#.....................-..................##..........................#',
+'#........................................##........◢###◣.............#',
+'#.S......◢##◣.................C..........##.......◢#####◣..........F.#',
+'#################~~~######^^#################^^^######################',
+'######################################################################']},
+{name:"Level 13",map:[
+'######################################################################',
+'#...................................###############..................#',
+'#...................................###############..................#',
+'#.............###...................###############..................#',
+'#............<###>..................###############..................#',
+'#.....o......<###>...o..............###############.....o............#',
+'#............<###>............o.....###############..................#',
+'#............<###>...................................................#',
+'#............<###>.........................o.........................#',
+'#.S..........<###.......C...............#>...<#...................F..#',
+'########RRRR###############◺....◿#####################################',
+'######################################################################']},
+{name:"Level 14",map:[
+'##########################################################################',
+'#........#....................###########................................#',
+'#........#....................###########.............o..................#',
+'#........Q..##~~~~O~~~~~~.....###########................................#',
+'#....-......##~~~~~~~~~~~###..###########....-..............-............#',
+'#...........##~~~~~~~~~~~###..p##########................................#',
+'#.S.........##~~~~~~~~~~~###..............C......P.......p......C.....F..#',
+'##############^^^^^^^^^^^#################################################',
+'##########################################################################']},
+{name:"Level 15",map:[
+'##################################',
+'#............................V...#',
+'#......F.........................#',
+'#....######......................#',
+'#.H....................o.........#',
+'#................................#',
+'#............#####...............#',
+'#................................#',
+'#................................#',
+'#...................######.......#',
+'#.......o........................#',
+'#..............C.................#',
+'#............#####...............#',
+'#...........................o....#',
+'#................................#',
+'#....######......................#',
+'#...........H....................#',
+'#.S........#............#........#',
+'##################################',
+'##################################']},
+{name:"Level 16",map:[
+'################################################################################',
+'#.....................##>.......G.....vv.........<##...........................#',
+'#.....o...............##>........................<##................o..........#',
+'#..............................................................................#',
+'#..............................................................................#',
+'#..............................................................................#',
+'#.S.....C..G................o...............o...............................F..#',
+'##############^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#################',
+'################################################################################']},
+{name:"Level 17",map:[
+'################################################################################################',
+'#.............#########################################################################........#',
+'#.........o...#########################################################################...o....#',
+'#.............#########################################################################........#',
+'#..............................................................................................#',
+'#..............................o....................................o..........................#',
+'#.S...Z............................#>.............C..Z.......................................F.#',
+'####################^^^^^^##############^^^^^^###########^^^^^^#########^^^^^^##################',
+'################################################################################################']},
+{name:"Level 18",map:[
+'##############################',
+'#............................#',
+'#..F......................=..#',
+'#.#####......o...............#',
+'#............................#',
+'#............................#',
+'#............................#',
+'#.....................o......#',
+'#..........RRRRR.............#',
+'#............................#',
+'#>...........................#',
+'#>....................C......#',
+'#>............o.....RRRRRR...#',
+'#>...........................#',
+'#>...........................#',
+'#............................#',
+'#............................#',
+'#...........RRRRR............#',
+'#............................#',
+'#............................#',
+'#............................#',
+'#.S.........................J#',
+'####RRRRRR####################',
+'##############################']},
+{name:"Level 19",map:[
+'######################################################################################',
+'#......................................############.....#............................#',
+'#......................................############.....#............................#',
+'#......................................############.....#............................#',
+'#......................................############.....#............................#',
+'#.....o................................############.....#..##~~~~~O~~~~~~.......o....#',
+'#................##~~~~~O~~~~~~........############.....#..##~~~~~~~~~~~~###.........#',
+'#................##~~~~~~~~~~~~###.....############.....Q..##~~~~~~~~~~~~###.........#',
+'#................##~~~~~~~~~~~~###.....p###########........##~~~~~~~~~~~~###.........#',
+'#.S.............P##~~~~~~~~~~~~###..................C......##~~~~~~~~~~~~###.......F.#',
+'#########~~~~######^^^^^^^^^^^^##############################^^^^^^^^^^^^#############',
+'######################################################################################']},
+{name:"Level 20",map:[
+'####################################################################################',
+'#.........V.................................V...G.......##.........................#',
+'#.....o.........o......o................................##........o................#',
+'#..................................................................................#',
+'#..................................................................................#',
+'#..................H...............................................................#',
+'#.S......◢##◣.....#.........#..C..G.....o...........o...........................F..#',
+'#####################################^^^^^^^^^^^^^^^^^^^^^^^^#######################',
+'####################################################################################']},
+{name:"Level 21",map:[
+'##############################################################################################################',
+'#................................###########................G.....##>..........##################............#',
+'#................................###########......................##>..........##################............#',
+'#...............P................###########...................................##################............#',
+'#..............###...............###########...................................##################............#',
+'#.....o.......<###~~~~~O~~~~~~...###########...................................##################o...........#',
+'#.............<###~~~~~~~~~~~~#..###########............o......o...............##################............#',
+'#.............<###~~~~~~~~~~~~#..###########.................................................................#',
+'#.............<###~~~~~~~~~~~~#..p##########.....................................o..................◢###◣....#',
+'#.S............###~~~~~~~~~~~~#..............C..G.......................C..Z.......................◢#####◣..F#',
+'#########RRRR#####^^^^^^^^^^^^#####################^^^^^^^^^^^^^^^^^^###############^^^^^^^^##################',
+'##############################################################################################################']}];
 
 // Physics ported from the original Nokia Bounce (community decompilation, rndtrash/nokia-bounce-decomp):
 // 25 ticks/s, integer pixels, velocities in 1/10 px per tick, ball moves one pixel at a time.
@@ -243,7 +388,8 @@ const MASK={12:['000011110000','001111111100','011111111110','011111111110','111
             16:['0000011111100000','0001111111111000','0011111111111100','0111111111111110','0111111111111110',
                 '1111111111111111','1111111111111111','1111111111111111','1111111111111111','1111111111111111',
                 '1111111111111111','0111111111111110','0111111111111110','0011111111111100','0001111111111000','0000011111100000']};
-const SLOPE={'◤':[30,(x,y)=>x+y<=11],'◥':[31,(x,y)=>x>=y],'◢':[32,(x,y)=>x+y>=11],'◣':[33,(x,y)=>x<=y]};
+const TL=(x,y)=>x+y<=11,TR=(x,y)=>x>=y,BR=(x,y)=>x+y>=11,BL=(x,y)=>x<=y;
+const SLOPE={'◤':[30,TL],'◥':[31,TR],'◢':[32,BR],'◣':[33,BL],'◸':[34,TL],'◹':[35,TR],'◿':[36,BR],'◺':[37,BL]}; // 34-37 are rubber ramps
 const SOLID=c=>c==='#'||c==='R'||c in SLOPE;
 const cv=document.getElementById('c'), g=cv.getContext('2d'), $=id=>document.getElementById(id);
 
@@ -255,9 +401,13 @@ const thorn=(x,y)=>y>=2&&Math.abs(x%6-2.5)<=(y-1)/10*3.2;
 const S={
   brick:sprite(12,12,brick),
   rubber:sprite(12,12,(x,y)=>!(x%4===1&&y%4===1)&&!((x===0||x===11)&&(y===0||y===11))),
-  slope:Object.fromEntries(Object.entries(SLOPE).map(([k,[,f]])=>[k,sprite(12,12,(x,y)=>f(x,y)&&(brick(x,y)||!f(x+(k==='◢'||k==='◥'?-1:1),y)||!f(x,y+(k==='◤'||k==='◥'?1:-1))))])),
+  slope:Object.fromEntries(Object.entries(SLOPE).map(([k,[id,f]])=>{const fill=id>=34?(x,y)=>!(x%4===1&&y%4===1):brick,
+    edge=(x,y)=>[[1,0],[-1,0],[0,1],[0,-1]].some(([a,c])=>{const u=x+a,v=y+c;return u>=0&&u<12&&v>=0&&v<12&&!f(u,v)});
+    return [k,sprite(12,12,(x,y)=>f(x,y)&&(fill(x,y)||edge(x,y)))]})),
   thorn:sprite(12,12,thorn),
   thornDown:sprite(12,12,(x,y)=>thorn(x,11-y)),
+  thornRight:sprite(12,12,(x,y)=>thorn(y,11-x)),
+  thornLeft:sprite(12,12,(x,y)=>thorn(y,x)),
   water:[0,2].map(o=>sprite(12,12,(x,y)=>y===0?(x+o)%4<2:y===1?(x+o)%4>=2:y>2&&y%3===0&&(x+y+o)%4===0)),
   deep:sprite(12,12,(x,y)=>y%3===0&&(x+y)%4===0),
   ball:{12:sprite(12,12,(x,y)=>MASK[12][y][x]==='1'&&!((x===3||x===4)&&(y===3||y===4))&&!(x===5&&y===3)),
@@ -268,6 +418,7 @@ const S={
   cp:[0,1].map(on=>sprite(12,12,(x,y)=>{const d=Math.abs(x-5.5)+Math.abs(y-4.5);return on?d<=4:(d<=4&&d>=3)||(x>=5&&x<=6&&y>=9)})),
   door:[0,1].map(open=>sprite(12,24,(x,y)=>{if(y<2||x<1||x>10)return false;const edge=x<=2||x>=9||y<=3;return edge||(!open&&(x+y)%2===0)||(open&&y>8&&y<18&&x===6)})),
   pump:sprite(12,12,(x,y)=>(x>=4&&x<=7&&y>=4)||(y===2&&x>=2&&x<=9)||(y===3&&(x===5||x===6))),
+  pumpDown:sprite(12,12,(x,y)=>(x>=4&&x<=7&&y<=7)||(y===9&&x>=2&&x<=9)||(y===8&&(x===5||x===6))),
   deflate:sprite(12,12,(x,y)=>box(x,y)||(x>=5&&x<=6&&y>=3&&y<=6)||(y===7&&x>=3&&x<=8)||(y===8&&x>=4&&x<=7)),
   life:sprite(12,12,(x,y)=>{const d=(x-5.5)**2+(y-5.5)**2;return (d<=9&&!(x===4&&y===4))||(d>=20&&d<=30&&(x+y)%2===0)}),
   grav:sprite(12,12,(x,y)=>box(x,y)||(x>=5&&x<=6&&y>=3&&y<=8)||(y===4&&x>=4&&x<=7)||(y===7&&x>=4&&x<=7)||(y===3&&x>=5&&x<=6)||(y===8&&x>=5&&x<=6)),
@@ -279,8 +430,13 @@ const S={
 function hoopSprite(flat,small,dotted,front){const w=flat?24:8,h=flat?8:24,a=(small?w-2:w)/2-.5,bb=(small&&!flat?h-4:h)/2-.5,cx=w/2-.5,cy=h/2-.5;
   return sprite(w,h,(x,y)=>{const d=((x-cx)/(a+.5))**2+((y-cy)/(bb+.5))**2;return d<=1&&d>=(small?.3:.42)&&(flat?(front?y>=4:y<4):(front?x>=4:x<4))&&(!dotted||(x+y)%2===0)})}
 const HS={};for(const f of [0,1])for(const s of [0,1])for(const d of [0,1])for(const fr of [0,1])HS[[f,s,d,fr]]=hoopSprite(f,s,d,fr);
-const DIG=['111101101101111','010110010010111','111001111100111','111001111001111','101101111001001','111100111001111','111100111101111','111001001001001','111101111101111','111101111001111'];
-function num(n,len,x,y){String(n).padStart(len,'0').split('').forEach((d,i)=>{const b=DIG[d];for(let k=0;k<15;k++)if(b[k]==='1')g.fillRect(x+i*4+k%3,y+(k/3|0),1,1)})}
+// 5x7 pixel digits: distinct 2/Z, 5/S, 1/7 shapes (the page font's digits read as letters)
+const D7=['.###.#...##..###.#.###..##...#.###.','..#...##....#....#....#....#...###.','.###.#...#....#...#...#...#...#####','#####...#...#.....#.....##...#.###.','...#...##..#.#.#..#.#####...#....#.','######....####.....#....##...#.###.','..##..#...#....####.#...##...#.###.','#####....#...#...#...#....#....#...','.###.#...##...#.###.#...##...#.###.','.###.#...##...#.####....#...#..##..'];
+function num(n,len,x,y){String(n).padStart(len,'0').split('').forEach((d,i)=>{const b=D7[d];for(let k=0;k<35;k++)if(b[k]==='#')g.fillRect(x+i*6+k%5,y+(k/5|0),1,1)})}
+function pxNum(n,s,len=0){const t=String(n).padStart(len,'0'),w=t.length*6-1;let d='';
+  [...t].forEach((c,i)=>{const b=D7[c];for(let k=0;k<35;k++)if(b[k]==='#')d+=`M${i*6+k%5} ${k/5|0}h1v1h-1z`});
+  return `<svg class="num" viewBox="0 0 ${w} 7" width="${w*s}" height="${7*s}" shape-rendering="crispEdges" fill="currentColor" role="img" aria-label="${t}"><path d="${d}"/></svg>`}
+const lvName=(i,s)=>`Level ${pxNum(i+1,s)}`;
 
 // UI icons: 1-bit pixel art, drawn as crisp SVG in the current text colour
 const ICONS={
@@ -290,6 +446,10 @@ const ICONS={
   jump:['....#....','...###...','..#####..','.........','...###...','..#####..','..#####..','...###...'],
   menu:['########','########','........','########','########','........','########','########'],
   flag:['##.....','#####..','#######','#####..','##.....','#......','#......','#......'],
+  play:['#.......','###.....','#####...','#######.','#######.','#####...','###.....','#.......'],
+  trophy:['#########','#.#####.#','#.#####.#','.#######.','..#####..','...###...','...###...','.#######.'],
+  help:['.####.','##..##','....##','...##.','..##..','..##..','......','..##..'],
+  lock:['..###..','.#...#.','.#...#.','#######','###.###','###.###','#######','#######'],
   moon:['..####..','.###....','###.....','###.....','###.....','####...#','.######.','..####..'],
   sun:['....#....','.#.....#.','...###...','..#####..','#.#####.#','..#####..','...###...','.#.....#.','....#....'],
   sndOn:['....#......','...##...#..','#####.#..#.','#####..#.#.','#####..#.#.','#####.#..#.','...##...#..','....#......'],
@@ -328,10 +488,10 @@ function load(n){
   lvl=n;grid=LEVELS[n].map.map(r=>[...r]);rows=grid.length;cols=grid[0].length;hoops=[];spiders=[];
   grid.forEach((row,y)=>row.forEach((c,x)=>{
     if('oOi'.includes(c)){hoops.push({k:'v',small:c==='i',c:x,r:y,got:false});row[x]=c==='O'?'~':'.'}
-    else if(c==='='){hoops.push({k:'h',small:false,c:x,r:y,got:false});row[x]='.'}
+    else if(c==='='||c==='-'){hoops.push({k:'h',small:c==='-',c:x,r:y,got:false});row[x]='.'}
     else if(c==='V'||c==='H'){spiders.push({x:x*T,y:y*T,dx:c==='H'?2:0,dy:c==='V'?2:0});row[x]='.'}
     else if(c==='S'){cp={c:x,r:y,s:12};row[x]='.'}}));
-  $('lvlName').textContent=LEVELS[n].name.toUpperCase();respawn();follow(true);
+  $('lvlName').innerHTML='LEVEL '+pxNum(n+1,1);respawn();follow(true);
 }
 function respawn(){const s=cp.s;b={x:cp.c*T+6,y:(cp.r+1)*T-s/2,l:0,o:0,t:0,m:false,u:false,v:false,C:0,pop:0,s,p:s/2,grav:0,jumpP:0,speedP:0}}
 const at=(c,r)=>(grid[r]&&grid[r][c])||'#';
@@ -341,7 +501,9 @@ function maskHits(x,y,tx,ty,shape){const s=b.s,M=MASK[s],ox=x-b.p-tx*T,oy=y-b.p-
   for(let j=Math.max(0,oy);j<Math.min(12,oy+s);j++)for(let i=Math.max(0,ox);i<Math.min(12,ox+s);i++)if(M[j-oy][i-ox]==='1'&&(!shape||shape(i,j)))return true;return false}
 function slopeBounce(id){const i=b.l; // original f.b(int): a slope turns vertical speed into horizontal and back
   if(id===31){b.l=b.l>-b.o?b.l:b.o>>1;b.o=i}else if(id===33){b.l=-b.l>b.o?b.l:b.o>>1;b.o=i}
-  else if(id===30){b.l=b.l<b.o?b.l:-(b.o>>1);b.o=-i}else if(id===32){b.l=b.l>b.o?b.l:-(b.o>>1);b.o=-i}}
+  else if(id===30){b.l=b.l<b.o?b.l:-(b.o>>1);b.o=-i}else if(id===32){b.l=b.l>b.o?b.l:-(b.o>>1);b.o=-i}
+  else if(id===35){b.l=b.l>-b.o?b.l:b.o;b.o=i}else if(id===37){b.l=-b.l>b.o?b.l:b.o;b.o=i}   // rubber ramps keep full speed
+  else if(id===34){b.l=b.l<b.o?b.l:-b.o;b.o=-i}else if(id===36){b.l=b.l>b.o?b.l:-b.o;b.o=-i}}
 function rims(h){return h.k==='v'?[[h.c*T+6,(h.r-1)*T],[h.c*T+6,h.r*T+11]]:[[h.c*T,h.r*T+6],[h.c*T+23,h.r*T+6]]}
 function zone(h){return h.k==='v'?[h.c*T+4,(h.r-1)*T,h.c*T+7,h.r*T+11]:[h.c*T,h.r*T+4,h.c*T+23,h.r*T+7]}
 function power(key){if(!b[key])events.push(['power']);b[key]=BOOST}
@@ -351,9 +513,10 @@ function free(x,y){ // original TODO_CheckBallCollision: can the ball stand at (
     const c=at(tx,ty),X=tx*T,Y=ty*T;
     if(c==='#'||(c==='F'&&left())){b.u=true;if(maskHits(x,y,tx,ty))return false}
     else if(c==='R'){b.u=true;if(maskHits(x,y,tx,ty)){b.v=true;return false}}
-    else if(c in SLOPE){if(maskHits(x,y,tx,ty,SLOPE[c][1])){if(!b.m)slopeBounce(SLOPE[c][0]);b.u=true;return false}}
+    else if(c in SLOPE){const [id,f]=SLOPE[c];if(maskHits(x,y,tx,ty,f)){if(id>=34)b.v=true;if(!b.m)slopeBounce(id);b.u=true;return false}}
     else if(c==='^'||c==='v'){if(overlap(x0,y0,x1,y1,X+4,Y,X+7,Y+11)){events.push(['die']);return false}}
-    else if(c==='P'){if(overlap(x0,y0,x1,y1,X+4,Y,X+7,Y+11)){events.push(['big']);return false}}
+    else if(c==='<'||c==='>'){if(overlap(x0,y0,x1,y1,X,Y+4,X+11,Y+7)){events.push(['die']);return false}} // sideways thorns: thin horizontal hitbox
+    else if(c==='P'||c==='Q'){if(overlap(x0,y0,x1,y1,X+4,Y,X+7,Y+11)){events.push(['big']);return false}}
     else if(c==='p'){events.push(['small']);return false}
     else if(c==='G'){power('grav');b.m=false;return false}
     else if(c==='J'){power('jumpP');return false}
@@ -375,9 +538,9 @@ function moveSpiders(){for(const sp of spiders){
   if(hit(sp.x+sp.dx,sp.y+sp.dy)){sp.dx=-sp.dx;sp.dy=-sp.dy}else{sp.x+=sp.dx;sp.y+=sp.dy}}}
 function die(){if(b.pop)return;b.pop=7;lives--;b.grav=b.jumpP=b.speedP=0;SFX.pop();toast(lives<0?'Game over':'Pop!')}
 function step(){ // port of the original f.b(): one 40 ms tick
-  if(clear>0){if(--clear===0){if(lvl+1<LEVELS.length)load(lvl+1);else{toast('You win!',1800);playing=false;setTimeout(openMenu,1600)}}return}
+  if(clear>0){if(--clear===0){if(lvl+1<LEVELS.length){load(lvl+1);reached(lvl)}else{toast('You win!',1800);playing=false;finish();setTimeout(openMenu,1600)}}return}
   moveSpiders();
-  if(b.pop>0){if(--b.pop===0){if(lives<0){SFX.over();playing=false;setTimeout(openMenu,1200)}else respawn()}return}
+  if(b.pop>0){if(--b.pop===0){if(lives<0){SFX.over();playing=false;finish();setTimeout(openMenu,1200)}else respawn()}return}
   events=[];
   const wet=at(b.x/T|0,b.y/T|0)==='~',big=b.s===16,held=keys.up||jumpBuf>0;
   let k,j;                                     // terminal speed and gravity per tick
@@ -406,7 +569,6 @@ function step(){ // port of the original f.b(): one 40 ms tick
   if(keys.right&&b.l<max)b.l+=6;else if(keys.left&&b.l>-max)b.l-=6;else if(b.l>0)b.l-=4;else if(b.l<0)b.l+=4;
   if(big&&!b.jumpP)b.t+=inv?5:-5;
   if(b.m&&held){b.o=inv?67+b.t:-67+b.t;b.m=false;jumpBuf=0}      // hold jump to keep bouncing, like the phone
-  else if(!inv&&big&&held&&(wet||at(b.x/T|0,(b.y+b.p)/T|0)==='~')&&Math.abs(b.o)<=20){b.o=-72;jumpBuf=0} // ponytail: jump off the water surface; the original is stricter
   if(jumpBuf>0)jumpBuf--;
   for(let n=Math.abs(b.l)/10|0,i=0;i<n;i++){const s=Math.sign(b.l),d=inv?1:-1;
     if(free(b.x+s,b.y))b.x+=s;
@@ -438,6 +600,9 @@ function draw(){
     else if(t in SLOPE)g.drawImage(S.slope[t],px,py);
     else if(t==='^')g.drawImage(S.thorn,px,py);
     else if(t==='v')g.drawImage(S.thornDown,px,py);
+    else if(t==='>')g.drawImage(S.thornRight,px,py);
+    else if(t==='<')g.drawImage(S.thornLeft,px,py);
+    else if(t==='Q')g.drawImage(S.pumpDown,px,py);
     else if(t==='~')g.drawImage(at(c,r-1)==='~'?S.deep:S.water[(frame>>4)&1],px,py);
     else if(t==='C'||t==='K')g.drawImage(S.cp[+(t==='K')],px,py);
     else if(t==='P')g.drawImage(S.pump,px,py);
@@ -458,28 +623,54 @@ function draw(){
   for(let i=0;i<Math.max(0,lives);i++)g.drawImage(S.mini,3+i*8,111);
   for(let i=0,n=left();i<n;i++)g.drawImage(S.miniRing,48+i*4,111);
   const boost=Math.max(b.grav,b.jumpP,b.speedP);
-  if(boost){const ic=b.grav?S.grav:b.jumpP?S.jump:S.speed;g.drawImage(ic,108,109);g.fillRect(122,113,Math.ceil(boost/BOOST*36),3);g.fillRect(122,116,36,1)}
-  num(score,6,W-3-23,112);
+  if(boost){const ic=b.grav?S.grav:b.jumpP?S.jump:S.speed;g.drawImage(ic,96,109);g.fillRect(110,113,Math.ceil(boost/BOOST*36),3);g.fillRect(110,116,36,1)}
+  num(score,6,W-3-35,110);
 }
 let acc=0,last=0;function loop(t){acc+=Math.min(200,t-(last||t));last=t; // ponytail: fixed 25Hz tick like the phone, no interpolation (the chunky motion is the point)
   if(mode==='play')while(acc>=TICK){step();frame++;acc-=TICK}else acc=0;draw();requestAnimationFrame(loop)}
 
-// menu
-function showPick(){$('pickName').textContent=LEVELS[pick].name}
-function openMenu(){mode='menu';keys={};$('menu').hidden=false;$('resume').disabled=!playing;showPick();$('select').focus({preventScroll:true})}
-function start(){audio();lives=3;score=0;clear=0;playing=true;load(pick);closeMenu()}
+// menu: New game, Continue, Levels, High score, Instructions (like the original), plus a saved game
+const SAVE_KEY='bounce-save';let save={best:0,max:0,cont:null};
+try{save={...save,...JSON.parse(localStorage.getItem(SAVE_KEY)||'{}')}}catch(e){}
+function persist(){save.best=Math.max(save.best,score);try{localStorage.setItem(SAVE_KEY,JSON.stringify(save))}catch(e){}}
+function reached(n){save.max=Math.max(save.max,n);save.cont={lvl:n,lives,score};persist()} // called when a game starts and on each level clear
+function finish(){save.cont=null;persist()}                                              // game over or all levels done
+const MAIN=[{id:'new',label:'New game',icon:'ball'},{id:'cont',label:'Continue',icon:'play'},{id:'levels',label:'Levels',icon:'flag'},
+  {id:'score',label:'High score',icon:'trophy'},{id:'help',label:'Instructions',icon:'help'}];
+const HELP=[['left','Roll with the joystick or arrow keys'],['up','Hold jump to keep bouncing'],['ball','Pass every hoop to open the exit'],
+  ['jump','Pump = big ball, floats. Deflater = small'],['flag','Crystals save your place']];
+let screen='main',mi=0;
+function renderMenu(){const main=screen==='main',lv=screen==='levels',list=main||lv;
+  $('mPick').hidden=$('mLabel').hidden=!list;$('mBody').hidden=list;let ok=true;
+  if(main){const it=MAIN[mi];$('mTitle').textContent='Bounce';$('mIcon').innerHTML=pxIcon(it.icon,5);
+    ok=it.id!=='cont'||!!save.cont;$('mLabel').innerHTML=it.id==='cont'&&save.cont?`Continue · ${lvName(save.cont.lvl,2)}`:it.label}
+  else if(lv){const open=pick<=save.max;$('mTitle').textContent='Levels';$('mIcon').innerHTML=pxIcon(open?'ball':'lock',5);
+    $('mLabel').innerHTML=lvName(pick,2)+(open?'':' · locked');ok=open}
+  else if(screen==='score'){$('mTitle').textContent='High score';
+    $('mBody').innerHTML=`<div class="big">${pxNum(save.best,5,6)}</div><p>Furthest: ${lvName(save.max,2)} of ${pxNum(LEVELS.length,2)}</p>`;ok=false}
+  else{$('mTitle').textContent='How to play';$('mBody').innerHTML=HELP.map(([ic,t])=>`<p>${pxIcon(ic,2).replace('<svg','<svg style="display:inline;vertical-align:-1px;margin-right:6px"')}${t}</p>`).join('');ok=false}
+  $('select').disabled=!ok;$('select').style.visibility=list?'visible':'hidden';$('resume').disabled=main&&!playing}
+function openMenu(){mode='menu';keys={};screen='main';mi=0;$('menu').hidden=false;renderMenu();$('select').focus({preventScroll:true})}
 function closeMenu(){audio();mode='play';$('menu').hidden=true}
-function cycle(d){pick=(pick+d+LEVELS.length)%LEVELS.length;showPick()}
+function begin(n,st){audio();lives=st?st.lives:3;score=st?st.score:0;clear=0;playing=true;load(n);reached(n);closeMenu()}
+function start(){begin(pick)} // used by tests: start the picked level fresh
+function menuSelect(){if($('select').disabled)return;
+  if(screen==='levels')return begin(pick);
+  const id=MAIN[mi].id;
+  if(id==='new')begin(0);else if(id==='cont')begin(save.cont.lvl,save.cont);
+  else{screen=id;if(id==='levels')pick=Math.min(pick,save.max);renderMenu()}}
+function menuBack(){if(screen!=='main'){screen='main';renderMenu()}else if(playing)closeMenu()}
+function cycle(d){if(screen==='main')mi=(mi+d+MAIN.length)%MAIN.length;else if(screen==='levels')pick=(pick+d+LEVELS.length)%LEVELS.length;renderMenu()}
 $('prev').onclick=()=>cycle(-1);$('next').onclick=()=>cycle(1);
-$('select').onclick=start;$('resume').onclick=()=>playing&&closeMenu();
-$('menuBtn').onclick=()=>mode==='menu'?(playing&&closeMenu()):openMenu();
+$('select').onclick=menuSelect;$('resume').onclick=menuBack;
+$('menuBtn').onclick=()=>mode==='menu'?menuBack():openMenu();
 $('snd').onclick=()=>{muted=!muted;try{localStorage.setItem('bounce-muted',muted?'1':'0')}catch(e){}showSnd();audio();SFX.cp()};showSnd();
 
 // input
 const KM={ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right',ArrowUp:'up',w:'up',' ':'up'};
 addEventListener('keydown',e=>{
-  if(e.key==='Escape'){mode==='menu'?(playing&&closeMenu()):openMenu();return}
-  if(mode==='menu'){if(e.key==='ArrowLeft')cycle(-1);else if(e.key==='ArrowRight')cycle(1);else if(e.key==='Enter'&&e.target.tagName!=='BUTTON'||e.key===' '){e.preventDefault();start()}return}
+  if(e.key==='Escape'){mode==='menu'?menuBack():openMenu();return}
+  if(mode==='menu'){if(e.key==='ArrowLeft')cycle(-1);else if(e.key==='ArrowRight')cycle(1);else if(e.key==='Enter'&&e.target.tagName!=='BUTTON'||e.key===' '){e.preventDefault();menuSelect()}return}
   const k=KM[e.key];if(k){keys[k]=true;if(k==='up')jumpBuf=3;e.preventDefault()}});
 addEventListener('keyup',e=>{const k=KM[e.key];if(k)keys[k]=false});
 addEventListener('blur',()=>{keys={};release()});
@@ -492,12 +683,12 @@ function stick(e){const r=pad.getBoundingClientRect(),max=(r.width-knob.offsetWi
 function release(e){if(e&&e.pointerId!==pid)return;pid=null;pad.classList.remove('drag');knob.style.transform='';keys.left=keys.right=keys.up=false}
 pad.addEventListener('pointerdown',e=>{e.preventDefault();audio();
   if(mode==='menu'){const r=pad.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
-    if(Math.abs(dx)>Math.abs(dy))cycle(Math.sign(dx));else if(dy<0)start();return}
+    if(Math.abs(dx)>Math.abs(dy))cycle(Math.sign(dx));else if(dy<0)menuSelect();return}
   pid=e.pointerId;try{pad.setPointerCapture(pid)}catch(_){}pad.classList.add('drag');stick(e)});
 pad.addEventListener('pointermove',e=>{if(e.pointerId===pid)stick(e)});
 ['pointerup','pointercancel','lostpointercapture'].forEach(t=>pad.addEventListener(t,release));
 document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k;
-  el.addEventListener('pointerdown',e=>{e.preventDefault();audio();if(mode==='menu'){k==='left'?cycle(-1):k==='right'?cycle(1):start();return}keys[k]=true;if(k==='up')jumpBuf=3});
+  el.addEventListener('pointerdown',e=>{e.preventDefault();audio();if(mode==='menu'){k==='left'?cycle(-1):k==='right'?cycle(1):menuSelect();return}keys[k]=true;if(k==='up')jumpBuf=3});
   ['pointerup','pointerleave','pointercancel'].forEach(t=>el.addEventListener(t,()=>keys[k]=false))});
 
 load(0);openMenu();requestAnimationFrame(loop);
