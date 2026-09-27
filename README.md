@@ -12,7 +12,7 @@ Open `index.html` in a browser to play. No build step, no dependencies.
 | Jump (hold to keep bouncing) | Up, W or Space |
 | Menu / resume | Esc |
 
-The on-screen pad and buttons work on touch screens. The sound button in the top bar mutes the beeps.
+On touch screens, drag the joystick sideways to roll and push it up to jump. The sound button in the top bar mutes the beeps.
 
 ## How it plays
 

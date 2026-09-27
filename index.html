@@ -6,14 +6,14 @@
 <style>
   /* ponytail: single visual world (1-bit LCD on a saffron ground), no theme switch */
   :root{
-    --feed:#ff9933; --feed-ink:#161616;
+    --feed:#fff0de; --feed-ink:#161616;
     --card:#f4f4f1; --ink:#161616; --ink-2:#6e6e6a; --rule:#d3d3ce; --press:#e3e3de;
     --lcd:#e3e7e5; --px:#15191b;
     --pix:"Pixelify Sans","Silkscreen",monospace; --lab:"Silkscreen","Courier New",monospace;
   }
   html,body{margin:0;background:var(--feed);color:var(--feed-ink);font-family:var(--lab)}
   .post{max-width:560px;min-height:100vh;box-sizing:border-box;margin:0 auto;padding:24px 16px;display:grid;align-content:center}
-  .phone{background:var(--card);color:var(--ink);border-radius:22px;padding:14px 14px 16px;box-shadow:0 1px 0 rgba(22,22,22,.12),0 18px 40px -18px rgba(120,50,0,.45);user-select:none;-webkit-user-select:none;touch-action:manipulation}
+  .phone{background:var(--card);color:var(--ink);border-radius:22px;padding:14px 14px 16px;box-shadow:0 1px 0 rgba(22,22,22,.12),0 18px 40px -18px rgba(150,70,0,.28);user-select:none;-webkit-user-select:none;touch-action:manipulation}
   .top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--lab);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
   .logo{font-size:13px;font-weight:700;letter-spacing:.24em}
   .logo i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-left:4px;vertical-align:-1px;background:radial-gradient(circle at 34% 32%,var(--card) 0 18%,var(--ink) 19%)}
@@ -40,16 +40,19 @@
   .soft{grid-row:6;width:100%;display:flex;justify-content:space-between;font-size:clamp(18px,5vw,24px);font-weight:700}
   .soft button:disabled{opacity:.3;cursor:default}
   .ctrls{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center}
-  .pad{position:relative;width:150px;height:150px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center}
-  .pad button{position:absolute;width:44px;height:44px;border:0;border-radius:50%;background:none;font-family:var(--lab);font-size:18px;color:var(--ink);cursor:pointer}
+  .pad{position:relative;width:150px;height:150px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;touch-action:none;cursor:grab}
+  .pad.drag{cursor:grabbing}
+  .pad span{position:absolute;width:44px;height:44px;display:grid;place-items:center;font-family:var(--lab);font-size:18px;color:var(--ink);pointer-events:none}
   .pad .l{left:4px;top:52px}.pad .r{right:4px;top:52px}.pad .u{top:4px;left:52px}
-  .knob{width:66px;height:66px;border-radius:50%;border:1.5px solid var(--ink);background:repeating-linear-gradient(135deg,transparent 0 3px,var(--rule) 3px 4px)}
+  .knob{width:66px;height:66px;border-radius:50%;border:1.5px solid var(--ink);background:var(--card) repeating-linear-gradient(135deg,transparent 0 3px,var(--rule) 3px 4px);transition:transform .14s ease-out;pointer-events:none}
+  .pad.drag .knob{transition:none;background-color:var(--press)}
+  @media (prefers-reduced-motion:reduce){.knob{transition:none}}
   .btns{display:flex;gap:10px;justify-content:flex-end;align-items:stretch;height:132px}
   .btns button{width:92px;border-radius:14px;border:1.5px solid var(--ink);background:none;font-family:var(--lab);font-size:11px;letter-spacing:.08em;color:var(--ink);cursor:pointer;display:grid;place-content:center;gap:4px}
   .btns .back{align-self:flex-end;height:76px}
   .btns .jump{font-size:13px;font-weight:700}
   .btns small{font-size:7px;color:var(--ink-2)}
-  .btns button:active,.pad button:active{background:var(--press)}
+  .btns button:active{background:var(--press)}
   button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
   @media (max-width:420px){.ctrls{grid-template-columns:120px 1fr}.pad{width:120px;height:120px}.pad .l,.pad .r{top:38px}.pad .u{left:38px}.knob{width:52px;height:52px}.btns{height:110px}.btns button{width:74px}.btns .back{height:64px}}
 </style>
@@ -68,11 +71,11 @@
       </div>
     </div>
     <div class="ctrls">
-      <div class="pad">
-        <button class="u" data-k="up" aria-label="Jump">↑</button>
-        <button class="l" data-k="left" aria-label="Left">←</button>
-        <div class="knob"></div>
-        <button class="r" data-k="right" aria-label="Right">→</button>
+      <div class="pad" id="pad" role="application" aria-label="Joystick: drag sideways to roll, push up to jump">
+        <span class="u" aria-hidden="true">↑</span>
+        <span class="l" aria-hidden="true">←</span>
+        <div class="knob" id="knob"></div>
+        <span class="r" aria-hidden="true">→</span>
       </div>
       <div class="btns">
         <button class="back" id="menuBtn">BACK<small>MENU · ESC</small></button>
@@ -438,7 +441,20 @@ addEventListener('keydown',e=>{
   if(mode==='menu'){if(e.key==='ArrowLeft')cycle(-1);else if(e.key==='ArrowRight')cycle(1);else if(e.key==='Enter'&&e.target.tagName!=='BUTTON'||e.key===' '){e.preventDefault();start()}return}
   const k=KM[e.key];if(k){keys[k]=true;if(k==='up')jumpBuf=3;e.preventDefault()}});
 addEventListener('keyup',e=>{const k=KM[e.key];if(k)keys[k]=false});
-addEventListener('blur',()=>keys={});
+addEventListener('blur',()=>{keys={};release()});
+// joystick: drag the knob like a mobile shooter; sideways rolls, pushing up jumps (held = keep bouncing)
+const pad=$('pad'),knob=$('knob');let pid=null;
+function stick(e){const r=pad.getBoundingClientRect(),max=(r.width-knob.offsetWidth)/2;
+  let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);const d=Math.hypot(dx,dy);if(d>max){dx*=max/d;dy*=max/d}
+  knob.style.transform=`translate(${dx}px,${dy}px)`;
+  keys.left=dx<-max*.3;keys.right=dx>max*.3;const up=dy<-max*.5;if(up&&!keys.up)jumpBuf=3;keys.up=up}
+function release(e){if(e&&e.pointerId!==pid)return;pid=null;pad.classList.remove('drag');knob.style.transform='';keys.left=keys.right=keys.up=false}
+pad.addEventListener('pointerdown',e=>{e.preventDefault();audio();
+  if(mode==='menu'){const r=pad.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
+    if(Math.abs(dx)>Math.abs(dy))cycle(Math.sign(dx));else if(dy<0)start();return}
+  pid=e.pointerId;try{pad.setPointerCapture(pid)}catch(_){}pad.classList.add('drag');stick(e)});
+pad.addEventListener('pointermove',e=>{if(e.pointerId===pid)stick(e)});
+['pointerup','pointercancel','lostpointercapture'].forEach(t=>pad.addEventListener(t,release));
 document.querySelectorAll('[data-k]').forEach(el=>{const k=el.dataset.k;
   el.addEventListener('pointerdown',e=>{e.preventDefault();audio();if(mode==='menu'){k==='left'?cycle(-1):k==='right'?cycle(1):start();return}keys[k]=true;if(k==='up')jumpBuf=3});
   ['pointerup','pointerleave','pointercancel'].forEach(t=>el.addEventListener(t,()=>keys[k]=false))});
